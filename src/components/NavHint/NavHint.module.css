@@ -1,0 +1,84 @@
+@font-face {
+  font-family: 'Cooper Light BT';
+  src: url('../../assets/fonts/CooperLightBT.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+.hint {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  z-index: 10;
+  padding: 0.5rem;
+}
+
+/* Directional positioning */
+.up {
+  top: 4vh;
+  left: 50%;
+  transform: translateX(-50%);
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.down {
+  bottom: 4vh;
+  left: 50%;
+  transform: translateX(-50%);
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.left {
+  left: 4vw;
+  top: 50%;
+  transform: translateY(-50%);
+  flex-direction: row;
+  gap: 0.5rem;
+}
+
+.right {
+  right: 4vw;
+  top: 50%;
+  transform: translateY(-50%);
+  flex-direction: row;
+  gap: 0.5rem;
+}
+
+.arrow {
+  font-family: 'Cooper Light BT', Georgia, serif;
+  font-weight: 300;
+  font-size: clamp(1.2rem, 2.5vw, 2rem);
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1;
+  user-select: none;
+  transition: color 0.2s ease;
+}
+
+.hint:hover .arrow {
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow:
+    0 0 12px rgba(255, 255, 255, 0.15),
+    0 0 4px rgba(200, 220, 255, 0.1);
+}
+
+.label {
+  display: flex;
+  flex-direction: row;
+  gap: 0.15rem;
+}
+
+.char {
+  font-family: 'Cooper Light BT', Georgia, serif;
+  font-weight: 300;
+  font-size: clamp(0.8rem, 1.5vw, 1.2rem);
+  color: rgba(255, 255, 255, 0.95);
+  line-height: 1;
+  user-select: none;
+  text-shadow:
+    0 0 12px rgba(255, 255, 255, 0.15),
+    0 0 4px rgba(200, 220, 255, 0.1);
+}
