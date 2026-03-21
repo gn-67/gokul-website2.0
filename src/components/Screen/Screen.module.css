@@ -1,0 +1,17 @@
+.screen {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.label {
+  color: rgba(255, 255, 255, 0.85);
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 3rem;
+  font-weight: 300;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  user-select: none;
+}

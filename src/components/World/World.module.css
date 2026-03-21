@@ -1,0 +1,31 @@
+.container {
+  width: 100vw;
+  height: 100vh;
+  overflow: scroll;
+  scroll-snap-type: both mandatory;
+}
+
+/* Hide scrollbars */
+.container::-webkit-scrollbar {
+  display: none;
+}
+.container {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 100vw);
+  grid-template-rows: repeat(3, 100vh);
+  width: 300vw;
+  height: 300vh;
+}
+
+.snapCell {
+  scroll-snap-align: start;
+}
+
+.emptyCell {
+  /* No snap alignment — browser will skip these */
+}
