@@ -27,11 +27,15 @@ export const GRID_OFFSET = 1
 interface NavState {
   activeScreen: GridPosition
   setActiveScreen: (pos: GridPosition) => void
+  loadingComplete: boolean
+  setLoadingComplete: () => void
 }
 
 export const useNavStore = create<NavState>((set) => ({
   activeScreen: { x: 0, y: 0 },
   setActiveScreen: (pos) => set({ activeScreen: pos }),
+  loadingComplete: false,
+  setLoadingComplete: () => set({ loadingComplete: true }),
 }))
 
 export function getScreenAt(x: number, y: number): Screen | undefined {

@@ -1,5 +1,6 @@
 import { useRef, useEffect, useCallback } from 'react'
 import Screen from '../Screen/Screen'
+import HomeScreen from '../HomeScreen/HomeScreen'
 import { SCREENS, GRID_OFFSET, useNavStore, getScreenAt } from '../../store/useNavStore'
 import styles from './World.module.css'
 
@@ -107,7 +108,11 @@ export default function World() {
 
       cells.push(
         <div key={`${col}-${row}`} className={screen ? styles.snapCell : styles.emptyCell}>
-          {screen && <Screen label={screen.label} color={screen.color} />}
+          {screen && (
+            screen.id === 'home'
+              ? <HomeScreen />
+              : <Screen label={screen.label} color={screen.color} />
+          )}
         </div>
       )
     }
