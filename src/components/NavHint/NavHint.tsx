@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { useNavStore } from '../../store/useNavStore'
 import styles from './NavHint.module.css'
 
 const CHAR_POOL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#@&%!?+=$'
@@ -23,6 +24,7 @@ interface NavHintProps {
 }
 
 export default function NavHint({ direction, label }: NavHintProps) {
+  const navigateTo = useNavStore((s) => s.navigateTo)
   const [isHovered, setIsHovered] = useState(false)
   const [displayChars, setDisplayChars] = useState<string[]>([])
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -84,6 +86,8 @@ export default function NavHint({ direction, label }: NavHintProps) {
       className={`${styles.hint} ${styles[direction]}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={() => navigateTo(direction)}
+      style={{ cursor: 'pointer' }}
     >
       {isVertical ? (
         direction === 'left' ? (

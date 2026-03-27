@@ -1,128 +1,122 @@
-import { useRef, useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import Screen from '../Screen/Screen'
 import HomeScreen from '../HomeScreen/HomeScreen'
-import { SCREENS, GRID_OFFSET, useNavStore, getScreenAt } from '../../store/useNavStore'
+import { SCREENS, useNavStore } from '../../store/useNavStore'
+import type { Direction } from '../../store/useNavStore'
 import styles from './World.module.css'
 
-// Grid is 3×3 (indices 0-2 on each axis)
-const GRID_SIZE = 3
+const DIRECTION_OFFSETS: Record<Direction, { x: string; y: string }> = {
+  up:    { x: '0%',    y: '-100%' },
+  down:  { x: '0%',    y: '100%' },
+  left:  { x: '-100%', y: '0%' },
+  right: { x: '100%',  y: '0%' },
+}
+
+const OPPOSITE: Record<Direction, Direction> = {
+  up: 'down',
+  down: 'up',
+  left: 'right',
+  right: 'left',
+}
+
+const slideVariants = {
+  enter: (dir: Direction | null) => {
+    if (!dir) return {}
+    const offset = DIRECTION_OFFSETS[dir]
+    return { x: offset.x, y: offset.y }
+  },
+  center: { x: '0%', y: '0%' },
+  exit: (dir: Direction | null) => {
+    if (!dir) return {}
+    const opposite = OPPOSITE[dir]
+    const offset = DIRECTION_OFFSETS[opposite]
+    return { x: offset.x, y: offset.y }
+  },
+}
+
+const slideTransition = {
+  duration: 0.6,
+  ease: [0.33, 1, 0.68, 1],
+}
 
 export default function World() {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const setActiveScreen = useNavStore((s) => s.setActiveScreen)
+  const activeScreenId = useNavStore((s) => s.activeScreenId)
+  const animDirection = useNavStore((s) => s.animDirection)
+  const navigateTo = useNavStore((s) => s.navigateTo)
+  const setAnimationComplete = useNavStore((s) => s.setAnimationComplete)
 
-  // Scroll to Home (center cell) instantly on mount
-  useEffect(() => {
-    const el = containerRef.current
-    if (!el) return
-    el.scrollTo({
-      left: GRID_OFFSET * window.innerWidth,
-      top: GRID_OFFSET * window.innerHeight,
-      behavior: 'instant',
-    })
-  }, [])
+  const wheelCooldown = useRef(false)
 
-  // Track active screen from scroll position
-  useEffect(() => {
-    const el = containerRef.current
-    if (!el) return
-
-    let ticking = false
-    const handleScroll = () => {
-      if (ticking) return
-      ticking = true
-      requestAnimationFrame(() => {
-        const col = Math.round(el.scrollLeft / window.innerWidth)
-        const row = Math.round(el.scrollTop / window.innerHeight)
-        setActiveScreen({ x: col - GRID_OFFSET, y: row - GRID_OFFSET })
-        ticking = false
-      })
-    }
-
-    el.addEventListener('scroll', handleScroll, { passive: true })
-    return () => el.removeEventListener('scroll', handleScroll)
-  }, [setActiveScreen])
-
-  // Keyboard / WASD navigation
-  const handleKeyNav = useCallback((e: KeyboardEvent) => {
-    const el = containerRef.current
-    if (!el) return
-
-    let dx = 0
-    let dy = 0
-    switch (e.key) {
-      case 'ArrowUp':
-      case 'w':
-      case 'W':
-        dy = -1
-        break
-      case 'ArrowDown':
-      case 's':
-      case 'S':
-        dy = 1
-        break
-      case 'ArrowLeft':
-      case 'a':
-      case 'A':
-        dx = -1
-        break
-      case 'ArrowRight':
-      case 'd':
-      case 'D':
-        dx = 1
-        break
-      default:
-        return
-    }
-
+  const handleWheel = useCallback((e: WheelEvent) => {
     e.preventDefault()
+    if (wheelCooldown.current) return
 
-    const currentCol = Math.round(el.scrollLeft / window.innerWidth)
-    const currentRow = Math.round(el.scrollTop / window.innerHeight)
-    const targetX = currentCol - GRID_OFFSET + dx
-    const targetY = currentRow - GRID_OFFSET + dy
+    const absX = Math.abs(e.deltaX)
+    const absY = Math.abs(e.deltaY)
+    const threshold = 30
 
-    if (!getScreenAt(targetX, targetY)) return
+    let direction: Direction | null = null
+    if (absY >= absX && absY > threshold) {
+      direction = e.deltaY > 0 ? 'down' : 'up'
+    } else if (absX > absY && absX > threshold) {
+      direction = e.deltaX > 0 ? 'right' : 'left'
+    }
 
-    el.scrollTo({
-      left: (targetX + GRID_OFFSET) * window.innerWidth,
-      top: (targetY + GRID_OFFSET) * window.innerHeight,
-      behavior: 'smooth',
-    })
-  }, [])
+    if (!direction) return
+    navigateTo(direction)
+    wheelCooldown.current = true
+    setTimeout(() => { wheelCooldown.current = false }, 800)
+  }, [navigateTo])
+
+  const handleKeyNav = useCallback((e: KeyboardEvent) => {
+    let direction: Direction | null = null
+    switch (e.key) {
+      case 'ArrowUp':    case 'w': case 'W': direction = 'up';    break
+      case 'ArrowDown':  case 's': case 'S': direction = 'down';  break
+      case 'ArrowLeft':  case 'a': case 'A': direction = 'left';  break
+      case 'ArrowRight': case 'd': case 'D': direction = 'right'; break
+      default: return
+    }
+    e.preventDefault()
+    navigateTo(direction)
+  }, [navigateTo])
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyNav)
     return () => window.removeEventListener('keydown', handleKeyNav)
   }, [handleKeyNav])
 
-  // Build the 3×3 grid cells
-  const cells = []
-  for (let row = 0; row < GRID_SIZE; row++) {
-    for (let col = 0; col < GRID_SIZE; col++) {
-      const gridX = col - GRID_OFFSET
-      const gridY = row - GRID_OFFSET
-      const screen = SCREENS.find(
-        (s) => s.position.x === gridX && s.position.y === gridY
-      )
+  const containerRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    el.addEventListener('wheel', handleWheel, { passive: false })
+    return () => el.removeEventListener('wheel', handleWheel)
+  }, [handleWheel])
 
-      cells.push(
-        <div key={`${col}-${row}`} className={screen ? styles.snapCell : styles.emptyCell}>
-          {screen && (
-            screen.id === 'home'
-              ? <HomeScreen />
-              : <Screen label={screen.label} color={screen.color} />
-          )}
-        </div>
-      )
-    }
-  }
+  const screen = SCREENS.find((s) => s.id === activeScreenId)!
 
   return (
     <div ref={containerRef} className={styles.container}>
-      <div className={styles.grid}>
-        {cells}
-      </div>
+      <AnimatePresence initial={false} custom={animDirection}>
+        <motion.div
+          key={activeScreenId}
+          className={styles.screenWrapper}
+          custom={animDirection}
+          variants={slideVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={slideTransition}
+          onAnimationComplete={() => setAnimationComplete()}
+        >
+          {activeScreenId === 'home'
+            ? <HomeScreen />
+            : <Screen id={screen.id} label={screen.label} color={screen.color} />
+          }
+        </motion.div>
+      </AnimatePresence>
     </div>
   )
 }

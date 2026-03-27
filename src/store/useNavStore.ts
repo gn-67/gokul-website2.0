@@ -1,47 +1,105 @@
 import { create } from 'zustand'
 
-export interface GridPosition {
-  x: number
-  y: number
-}
+export type Direction = 'up' | 'down' | 'left' | 'right'
 
 export interface Screen {
   id: string
   label: string
-  position: GridPosition
   color: string
 }
 
 export const SCREENS: Screen[] = [
-  { id: 'about', label: 'ABOUT ME', position: { x: 0, y: -1 }, color: '#2D6A4F' },
-  { id: 'design', label: 'DESIGN & OTHER WORKS', position: { x: -1, y: 0 }, color: '#7B2D8B' },
-  { id: 'home', label: 'HOME', position: { x: 0, y: 0 }, color: '#1A1A2E' },
-  { id: 'dev', label: 'DEV WORKS', position: { x: 1, y: 0 }, color: '#B44215' },
-  { id: 'life', label: 'LIFE & PHOTOS', position: { x: 0, y: 1 }, color: '#1B4965' },
+  { id: 'home', label: 'HOME', color: '#1A1A2E' },
+  { id: 'about', label: 'ABOUT ME', color: '#2D6A4F' },
+  { id: 'life', label: 'LIFE & PHOTOS', color: '#1B4965' },
+  { id: 'dev', label: 'DEV WORKS', color: '#B44215' },
+  { id: 'design', label: 'DESIGN & OTHER WORKS', color: '#7B2D8B' },
 ]
 
-// Grid spans from -1 to 1 on both axes → 3 columns, 3 rows
-// We offset by 1 so pixel positions are non-negative
-export const GRID_OFFSET = 1
+interface NavTarget {
+  screenId: string
+  animDirection: Direction
+}
+
+// For every (screen, direction) pair: which screen do we go to, and which direction does the slide animate?
+export const NAVIGATION_MAP: Record<string, Record<Direction, NavTarget>> = {
+  home: {
+    up:    { screenId: 'about',  animDirection: 'up' },
+    down:  { screenId: 'life',   animDirection: 'down' },
+    left:  { screenId: 'design', animDirection: 'left' },
+    right: { screenId: 'dev',    animDirection: 'right' },
+  },
+  about: {
+    down:  { screenId: 'home',   animDirection: 'down' },
+    up:    { screenId: 'life',   animDirection: 'up' },    // wrap
+    left:  { screenId: 'design', animDirection: 'left' },
+    right: { screenId: 'dev',    animDirection: 'right' },
+  },
+  life: {
+    up:    { screenId: 'home',   animDirection: 'up' },
+    down:  { screenId: 'about',  animDirection: 'down' },  // wrap
+    left:  { screenId: 'design', animDirection: 'left' },
+    right: { screenId: 'dev',    animDirection: 'right' },
+  },
+  dev: {
+    left:  { screenId: 'home',   animDirection: 'left' },
+    right: { screenId: 'design', animDirection: 'right' }, // wrap
+    up:    { screenId: 'about',  animDirection: 'up' },
+    down:  { screenId: 'life',   animDirection: 'down' },
+  },
+  design: {
+    right: { screenId: 'home',   animDirection: 'right' },
+    left:  { screenId: 'dev',    animDirection: 'left' },  // wrap
+    up:    { screenId: 'about',  animDirection: 'up' },
+    down:  { screenId: 'life',   animDirection: 'down' },
+  },
+}
+
+export interface NavHintConfig {
+  direction: Direction
+  label: string
+}
+
+export function getNavHintsForScreen(screenId: string): NavHintConfig[] {
+  const map = NAVIGATION_MAP[screenId]
+  if (!map) return []
+  return (Object.keys(map) as Direction[]).map((dir) => {
+    const target = map[dir]
+    const screen = SCREENS.find((s) => s.id === target.screenId)!
+    return { direction: dir, label: screen.label }
+  })
+}
 
 interface NavState {
-  activeScreen: GridPosition
-  setActiveScreen: (pos: GridPosition) => void
+  activeScreenId: string
+  animDirection: Direction | null
+  isAnimating: boolean
   loadingComplete: boolean
+  navigateTo: (direction: Direction) => void
+  setAnimationComplete: () => void
   setLoadingComplete: () => void
 }
 
-export const useNavStore = create<NavState>((set) => ({
-  activeScreen: { x: 0, y: 0 },
-  setActiveScreen: (pos) => set({ activeScreen: pos }),
+export const useNavStore = create<NavState>((set, get) => ({
+  activeScreenId: 'home',
+  animDirection: null,
+  isAnimating: false,
   loadingComplete: false,
+
+  navigateTo: (direction: Direction) => {
+    const { activeScreenId, isAnimating } = get()
+    if (isAnimating) return
+    const map = NAVIGATION_MAP[activeScreenId]
+    if (!map) return
+    const target = map[direction]
+    if (!target) return
+    set({
+      activeScreenId: target.screenId,
+      animDirection: target.animDirection,
+      isAnimating: true,
+    })
+  },
+
+  setAnimationComplete: () => set({ isAnimating: false }),
   setLoadingComplete: () => set({ loadingComplete: true }),
 }))
-
-export function getScreenAt(x: number, y: number): Screen | undefined {
-  return SCREENS.find((s) => s.position.x === x && s.position.y === y)
-}
-
-export function isValidPosition(x: number, y: number): boolean {
-  return getScreenAt(x, y) !== undefined
-}
