@@ -10,10 +10,10 @@ export interface Screen {
 
 export const SCREENS: Screen[] = [
   { id: 'home', label: 'HOME', color: '#1A1A2E' },
-  { id: 'about', label: 'ABOUT ME', color: '#2D6A4F' },
-  { id: 'life', label: 'LIFE & PHOTOS', color: '#1B4965' },
-  { id: 'dev', label: 'DEV WORKS', color: '#B44215' },
-  { id: 'design', label: 'DESIGN & OTHER WORKS', color: '#7B2D8B' },
+  { id: 'about', label: 'ABOUT', color: '#2D6A4F' },
+  { id: 'life', label: 'LIFE', color: '#1B4965' },
+  { id: 'dev', label: 'WORK', color: '#B44215' },
+  { id: 'design', label: 'STUDIO', color: '#7B2D8B' },
 ]
 
 interface NavTarget {

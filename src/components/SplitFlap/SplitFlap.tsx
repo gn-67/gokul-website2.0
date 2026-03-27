@@ -82,6 +82,11 @@ export default function SplitFlap({
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
+      // If cleanup runs before the animation finished (e.g. React StrictMode
+      // double-mount), reset the flag so the next setup can restart it.
+      if (!introCompleteRef.current) {
+        hasAnimated.current = false
+      }
     }
   }, [active, initialCycles, staggerDelay])
 
