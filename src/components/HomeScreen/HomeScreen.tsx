@@ -35,6 +35,8 @@ export default function HomeScreen() {
       {getNavHintsForScreen('home').map((hint) => (
         <NavHint key={hint.direction} direction={hint.direction} label={hint.label} />
       ))}
+
+      <span className={styles.controlsHint}>scroll, wasd, or arrow keys to navigate</span>
     </div>
   )
 }

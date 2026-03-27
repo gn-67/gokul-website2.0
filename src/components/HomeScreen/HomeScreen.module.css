@@ -24,3 +24,16 @@
 .clockBlock {
   margin-top: 0.3rem;
 }
+
+.controlsHint {
+  position: absolute;
+  bottom: 2.5vh;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.25);
+  font-family: inherit;
+  pointer-events: none;
+  text-transform: uppercase;
+}
