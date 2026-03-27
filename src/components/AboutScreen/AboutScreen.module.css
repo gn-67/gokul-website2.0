@@ -1,0 +1,54 @@
+.screen {
+  width: 100vw;
+  height: 100vh;
+  background-color: #2D6A4F;
+  display: flex;
+  align-items: stretch;
+  padding: 30px 0 30px 30px;
+  position: relative;
+}
+
+.card {
+  height: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 2rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.bgLayer {
+  position: absolute;
+  inset: -25%;
+  width: 150%;
+  height: 150%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.glareLayer {
+  position: absolute;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 30% 40%,
+    rgba(255, 215, 120, 0.18) 0%,
+    rgba(255, 195, 80, 0.08) 25%,
+    transparent 55%
+  );
+  mix-blend-mode: soft-light;
+}
+
+.fgLayer {
+  position: absolute;
+  pointer-events: none;
+  /* Adjust these to align the foreground on the background */
+  bottom: 0;
+  left: 20%;
+  transform: translateX(-50%) scale(1.25);
+  transform-origin: bottom center;
+  width: 70%;
+  height: auto;
+  object-fit: contain;
+}

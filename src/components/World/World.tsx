@@ -2,6 +2,7 @@ import { useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Screen from '../Screen/Screen'
 import HomeScreen from '../HomeScreen/HomeScreen'
+import AboutScreen from '../AboutScreen/AboutScreen'
 import { SCREENS, useNavStore } from '../../store/useNavStore'
 import type { Direction } from '../../store/useNavStore'
 import styles from './World.module.css'
@@ -113,6 +114,8 @@ export default function World() {
         >
           {activeScreenId === 'home'
             ? <HomeScreen />
+            : activeScreenId === 'about'
+            ? <AboutScreen />
             : <Screen id={screen.id} label={screen.label} color={screen.color} />
           }
         </motion.div>
