@@ -4,7 +4,8 @@
   background-color: #2D6A4F;
   display: flex;
   align-items: stretch;
-  padding: 30px 0 30px 30px;
+  gap: 30px;
+  padding: 4vh 4vw;
   position: relative;
 }
 
@@ -14,6 +15,7 @@
   border-radius: 2rem;
   overflow: hidden;
   position: relative;
+  flex-shrink: 0;
 }
 
 .bgLayer {
@@ -38,6 +40,64 @@
     transparent 55%
   );
   mix-blend-mode: soft-light;
+}
+
+.rightContent {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 1.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.greeting {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  gap: 0.15rem;
+}
+
+.greetChar {
+  font-family: 'Cooper Light BT', Georgia, serif;
+  font-weight: 300;
+  font-size: clamp(0.8rem, 1.5vw, 1.2rem);
+  color: rgba(255, 255, 255, 0.95);
+  line-height: 1;
+  user-select: none;
+  text-shadow:
+    0 0 12px rgba(255, 255, 255, 0.15),
+    0 0 4px rgba(200, 220, 255, 0.1);
+}
+
+.glassPanel {
+  width: 340px;
+  aspect-ratio: 1;
+  border-radius: 2rem;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.blurb {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.85);
+  font-family: inherit;
+  margin: 0;
 }
 
 .fgLayer {
