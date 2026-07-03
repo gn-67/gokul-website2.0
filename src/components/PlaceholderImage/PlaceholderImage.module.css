@@ -1,0 +1,141 @@
+/* Empty placeholder frame — blueprint feel */
+.frame {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      transparent 0 10px,
+      rgba(255, 255, 255, 0.04) 10px 11px
+    );
+  overflow: hidden;
+}
+
+/* Corner crosshair registration marks */
+.frame::before,
+.frame::after {
+  content: '+';
+  position: absolute;
+  font-family: var(--font-serif);
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.35);
+  line-height: 1;
+}
+
+.frame::before {
+  top: 6px;
+  left: 8px;
+}
+
+.frame::after {
+  bottom: 6px;
+  right: 8px;
+}
+
+.label {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: clamp(0.7rem, 1vw, 0.9rem);
+  color: var(--text-dim);
+  text-align: center;
+  padding: 0 1rem;
+  user-select: none;
+}
+
+/* Real image, same box */
+.image {
+  display: block;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.photo {
+  width: 100%;
+}
+
+/* Screenshot: fake browser chrome above the frame */
+.screenshot {
+  width: 100%;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.chromeBar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+}
+
+.screenshot .frame {
+  border-radius: 0 0 4px 4px;
+}
+
+.screenshot .image {
+  border-radius: 0 0 4px 4px;
+}
+
+.chromeDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Polaroid: white matte with handwritten caption space */
+.polaroid {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #f4f1ea;
+  padding: 8px 8px 6px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  border-radius: 2px;
+}
+
+.polaroid .frame {
+  border-color: rgba(0, 0, 0, 0.25);
+  background:
+    repeating-linear-gradient(
+      45deg,
+      transparent 0 10px,
+      rgba(0, 0, 0, 0.05) 10px 11px
+    ),
+    #e8e4da;
+  border-radius: 1px;
+}
+
+.polaroid .frame::before,
+.polaroid .frame::after {
+  color: rgba(0, 0, 0, 0.3);
+}
+
+.polaroid .label {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.polaroid .image {
+  border-radius: 1px;
+}
+
+.caption {
+  font-family: var(--font-hand);
+  font-size: clamp(1rem, 1.4vw, 1.3rem);
+  color: #3a3a3a;
+  text-align: center;
+  padding: 4px 2px 2px;
+  line-height: 1.1;
+  min-height: 28px;
+  user-select: none;
+}

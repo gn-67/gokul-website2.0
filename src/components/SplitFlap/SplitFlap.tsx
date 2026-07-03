@@ -35,12 +35,15 @@ export default function SplitFlap({
     lines.map((line) => Array(line.length).fill(' '))
   )
   const [lockedSet, setLockedSet] = useState<Set<number>>(new Set())
+  const [introComplete, setIntroComplete] = useState(false)
   const tickRef = useRef(0)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const hasAnimated = useRef(false)
   const introCompleteRef = useRef(false)
   const linesRef = useRef(lines)
-  linesRef.current = lines
+  useEffect(() => {
+    linesRef.current = lines
+  }, [lines])
 
   // --- Intro animation (plays once for both live and non-live) ---
   useEffect(() => {
@@ -76,6 +79,7 @@ export default function SplitFlap({
       const lastLock = initialCycles + (tc - 1) * staggerTicks
       if (tick >= lastLock) {
         introCompleteRef.current = true
+        setIntroComplete(true)
         if (intervalRef.current) clearInterval(intervalRef.current)
       }
     }, TICK_INTERVAL)
@@ -90,11 +94,9 @@ export default function SplitFlap({
     }
   }, [active, initialCycles, staggerDelay])
 
-  // --- Live mode: after intro is done, update chars directly ---
-  useEffect(() => {
-    if (!live || !introCompleteRef.current) return
-    setDisplayChars(lines.map((line) => [...line]))
-  }, [lines, live])
+  // --- Live mode: after intro is done, render chars directly from props ---
+  const renderChars =
+    live && introComplete ? lines.map((line) => [...line]) : displayChars
 
   const isCharLocked = (flatIdx: number) => {
     if (live) return true
@@ -105,7 +107,7 @@ export default function SplitFlap({
 
   return (
     <div className={`${styles.textBlock} ${alignEnd ? styles.alignEnd : ''}`}>
-      {displayChars.map((lineChars, lineIdx) => (
+      {renderChars.map((lineChars, lineIdx) => (
         <div key={lineIdx} className={`${styles.line} ${alignEnd ? styles.lineEnd : ''}`}>
           {lineChars.map((char, charIdx) => {
             const flatIdx =

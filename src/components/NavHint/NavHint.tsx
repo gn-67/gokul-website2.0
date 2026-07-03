@@ -40,7 +40,6 @@ export default function NavHint({ direction, label }: NavHintProps) {
   useEffect(() => {
     if (!isHovered) {
       clearAnim()
-      setDisplayChars([])
       return
     }
 
@@ -85,7 +84,10 @@ export default function NavHint({ direction, label }: NavHintProps) {
     <div
       className={`${styles.hint} ${styles[direction]}`}
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseLeave={() => {
+        setIsHovered(false)
+        setDisplayChars([])
+      }}
       onClick={() => navigateTo(direction)}
       style={{ cursor: 'pointer' }}
     >
