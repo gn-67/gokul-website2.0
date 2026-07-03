@@ -2,7 +2,7 @@
 
 ## Vision
 
-A 2D free-roam personal portfolio website. The user lands on a central Home screen and can scroll freely in any cardinal direction to reach other sections. The entire "world" is a 3×3 grid with 5 populated screens arranged in a cross/plus shape. Navigation uses native browser 2D scroll with CSS scroll-snap for a smooth, natural feel — like scrolling on a normal page. Keyboard and WASD buttons provide alternative navigation via smooth `scrollTo()`. A beach background (custom MP4) will be added in a later phase, fixed behind the entire world.
+A 2D free-roam personal portfolio website. The user lands on a central Home screen and can scroll freely in any cardinal direction to reach other sections. The "world" is 5 screens arranged in a cross/plus shape with infinite wrap navigation. Navigation uses Framer Motion AnimatePresence slide transitions driven by wheel, WASD/arrow keys, and clickable edge hints (see 2026-03-26 decision — native scroll couldn't support wrapping). A beach background (custom MP4) will be added in a later phase, fixed behind the entire world.
 
 ## Grid Map
 
@@ -18,7 +18,7 @@ Experiences   HOME          Work
               Life & Photos
 ```
 
-The world is a 3×3 CSS grid (300vw × 300vh). Only the 5 screens above are populated — the 4 corner cells are empty. CSS `scroll-snap-type: both mandatory` snaps to valid screens only. On load, the viewport scrolls instantly to Home (center cell) before anything renders.
+Only one screen renders at a time; slides animate in from the direction of travel via AnimatePresence. Every screen defines all four directions in `NAVIGATION_MAP` (`src/store/useNavStore.ts`), so navigation wraps infinitely (e.g. up from About loops to Life & Photos).
 
 > **Note:** Code-level labels differ from display names. In `useNavStore.ts`: Work → id `dev`, label `WORK`; Experiences → id `design`, label `STUDIO`.
 
@@ -29,11 +29,9 @@ The world is a 3×3 CSS grid (300vw × 300vh). Only the 5 screens above are popu
 | Vite            | Fast dev server, simple config, no SSR overhead            |
 | React           | Component model, ecosystem, familiarity                    |
 | TypeScript      | Type safety with minimal overhead                          |
-| Zustand         | Lightweight state — tracks active screen for future use    |
-| Framer Motion   | Reserved for content animations in later phases            |
+| Zustand         | Lightweight state — navigation map + active screen         |
+| Framer Motion   | Slide transitions between screens + content animations     |
 | CSS Modules     | Scoped styles, no runtime cost, co-located with components |
-| Native Scroll   | Most natural feel — real browser scroll, not transforms    |
-| CSS Scroll-Snap | Snaps to screens without JS; smooth and performant         |
 
 **Not using:**
 - Next.js — no SSR needed
@@ -50,42 +48,42 @@ The world is a 3×3 CSS grid (300vw × 300vh). Only the 5 screens above are popu
 - Instant scroll to Home on load (no flash)
 - No mobile-specific work yet
 
-### Phase 2: Loading Screen + Asset Preloading ← **WE ARE HERE**
-- Simple loading screen component
-- Covers the world until scroll-to-home completes
-- Fades out to reveal the site
+### Phase 2: Loading Screen + Asset Preloading ✅
+- Loading screen with real asset preloading (fonts via `document.fonts.load` + About images)
+- 800ms minimum display, 5s safety timeout so a stuck asset never hangs the site
+- Fades out to reveal the site; gates the Home split-flap intro
 
 ### Phase 3: Beach MP4 Background ⏸ **DEFERRED** (no assets available yet)
 - Fixed video background behind the entire world
 - Performance considerations (autoplay, loop, muted)
 
-### Phase 4: Home Screen Content
-- Name, tagline, nav hints
-- Entry animations
+### Phase 4: Home Screen Content ✅
+- Split-flap name display, live military-time clock, nav hints
 
-### Phase 5: Work Screen
-- Project showcases, links, descriptions
-- Use `<PlaceholderImage />` components for project thumbnails/screenshots until real assets are provided
+### Phase 5: Work Screen ✅
+- Master–detail project showcase: 2×2 grid of screenshot-style cards, scramble-reveal title, glass description panel, stack chips
+- Content in `src/data/projects.ts` as `[bracketed]` placeholders
 
-### Phase 6: Experiences Screen
-- Design portfolio, other creative work
-- Use `<PlaceholderImage />` components for portfolio pieces until real assets are provided
+### Phase 6: Experiences Screen ✅
+- Experience timeline (glowing line-draw, hover re-scramble titles) + creative shelf of rotated placeholder frames
+- Content in `src/data/experiences.ts` as `[bracketed]` placeholders
 
-### Phase 7: About Me Screen
-- Bio, skills, background
-- Use `<PlaceholderImage />` components for profile/background images until real assets are provided
+### Phase 7: About Me Screen ✅
+- Parallax profile card (real photos), scramble greeting, glass bio panel
 
-### Phase 8: Life & Photos Screen
-- Photo gallery with a scrapbook/collage aesthetic — not a clean grid
-- Scattered/rotated photos, tape/pin decorations, handwritten-style labels
-- Organic, layered layout evoking a physical scrapbook or pinboard
-- Use `<PlaceholderImage />` components throughout — easily swappable when real photos arrive
+### Phase 8: Life & Photos Screen ✅
+- Scrapbook pinboard: scattered/rotated polaroids with tape/pin decorations, handwritten Caveat captions, spring drop-in, hover lift
+- Content in `src/data/lifePhotos.ts` as `[bracketed]` placeholders
 
-### Phase 9: Polish, Mobile QA, Performance
-- Mobile/touch support
-- Cross-browser testing
-- Performance optimization
-- Final polish
+### Phase 9: Polish, Mobile QA, Performance — **partially done**
+- ✅ Design tokens, single global @font-face, lint-clean, real preloading, docs
+- ⏸ Mobile/touch support deferred (desktop experience locked in first)
+- ⏸ Cross-browser QA pass pending
+
+### Remaining work
+- Swap `[bracketed]` placeholder copy/images in `src/data/*.ts` for real content
+- Beach MP4 background when assets are ready (Phase 3)
+- Mobile/touch navigation + responsive layouts (Phase 9)
 
 ## Decisions Log
 
@@ -97,3 +95,8 @@ The world is a 3×3 CSS grid (300vw × 300vh). Only the 5 screens above are popu
 | Phase 3 deferred | Blender files/recordings for MP4 not available yet; will revisit when assets are ready | 2026-03-21 |
 | Framer Motion AnimatePresence over native scroll | Infinite loop navigation (wrapping + perpendicular targets) requires screens that aren't physically adjacent — native scroll can't support this. AnimatePresence slide transitions give the same scroll-like feel with full control over navigation targets | 2026-03-26 |
 | Rename "Dev Works" → "Work", "Design & Other Works" → "Experiences" | Cleaner display names. Code-level ids/labels unchanged (`dev`/`WORK`, `design`/`STUDIO`) | 2026-07-02 |
+| Screens registered via `SCREEN_COMPONENTS` map in World.tsx | Replaces the hardcoded ternary; unmapped ids fall back to the generic `<Screen>` so screens can land incrementally | 2026-07-02 |
+| Marked `[bracketed]` placeholder copy in `src/data/*.ts` | All content is data-driven and obviously fake — swapping in real projects/experiences/photos is a data-file edit, no layout changes | 2026-07-02 |
+| Caveat via `@fontsource/caveat` for handwritten text | Self-hosted npm package, no CDN at runtime; `--font-hand` token carries a system-cursive fallback | 2026-07-02 |
+| Design tokens in `:root` (index.css) | Colors, fonts, text alphas, glow, glass panel shared across modules; @font-face deduplicated to one global rule | 2026-07-02 |
+| Real asset preloading in LoadingScreen | `document.fonts.load` + Image() preloads with 800ms min display and 5s safety race — fixes FOUT on the split-flap intro without risking a hang | 2026-07-02 |

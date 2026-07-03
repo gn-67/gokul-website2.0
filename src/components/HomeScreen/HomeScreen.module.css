@@ -1,7 +1,7 @@
 .screen {
   width: 100vw;
   height: 100vh;
-  background-color: #1A1A2E;
+  background-color: var(--color-home);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -32,7 +32,7 @@
   transform: translateX(-50%);
   font-size: 0.7rem;
   letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.25);
+  color: var(--text-faint);
   font-family: inherit;
   pointer-events: none;
   text-transform: uppercase;

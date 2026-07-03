@@ -22,7 +22,8 @@ Experiences HOME (0,0)    Work (1,0)
 - **Build:** Vite 8
 - **State:** Zustand (useNavStore)
 - **Animation:** Framer Motion (AnimatePresence slide transitions)
-- **Styling:** CSS Modules
+- **Styling:** CSS Modules + design tokens (`:root` vars in `src/index.css`)
+- **Fonts:** Cooper Light BT (self-hosted TTF, global @font-face in index.css), Caveat (handwritten, `@fontsource/caveat`)
 - **No React Router** — navigation is spatial/scroll-based, not URL-based
 
 ## Commands
@@ -37,34 +38,50 @@ Experiences HOME (0,0)    Work (1,0)
 ```
 src/
   App.tsx              — root component
-  main.tsx             — entry point
-  index.css            — global styles
+  main.tsx             — entry point (imports Caveat font css)
+  index.css            — global styles + design tokens (:root vars) + @font-face
   store/
-    useNavStore.ts     — Zustand store tracking active screen position
+    useNavStore.ts     — Zustand store: NAVIGATION_MAP, active screen, nav hints
+  hooks/
+    useScrambleText.ts — scramble-reveal text animation (shared)
+  data/
+    projects.ts        — Work screen content ([bracketed] placeholders)
+    experiences.ts     — Studio timeline + creative shelf content
+    lifePhotos.ts      — Life scrapbook photos/captions/positions
   components/
-    World/             — world container, grid layout
-    Screen/            — individual screen wrapper
-    HomeScreen/        — home screen content
-    AboutScreen/       — about me screen
-    NavHint/           — navigation direction hints
+    World/             — navigation engine (wheel/keys, SCREEN_COMPONENTS map)
+    Screen/            — generic fallback screen for unmapped ids
+    HomeScreen/        — split-flap name + live clock
+    AboutScreen/       — parallax profile card, scramble greeting, bio
+    WorkScreen/        — project showcase (master-detail, 2×2 card grid)
+    StudioScreen/      — experience timeline + creative shelf
+    LifeScreen/        — scrapbook collage (polaroids, tape/pins)
+    NavHint/           — navigation direction hints (hover scramble)
     SplitFlap/         — split-flap display component
-    LoadingScreen/     — loading/splash screen
+    LoadingScreen/     — real asset preloading (fonts + images) + fade
+    PlaceholderImage/  — swappable image placeholder (photo/screenshot/polaroid)
 ```
 
 ## Current Status
 
-See ROADMAP.md for phase breakdown. The project is past Phase 1 (navigation shell) and in Phase 2 (loading screen + asset preloading). Phase 3 (beach MP4 background) is deferred pending assets.
+All five screens are built (see ROADMAP.md). Remaining deferred work:
+- **Phase 3** — beach MP4 background (waiting on assets)
+- **Phase 9 mobile** — touch/swipe navigation and responsive layouts (desktop experience is locked in first)
+- **Content** — all copy/images are `[bracketed]` placeholders in `src/data/*.ts`, ready to swap for real content
 
 ## Key Architecture Decisions
 
 - Framer Motion AnimatePresence over native scroll — infinite loop navigation requires screens that aren't physically adjacent
+- Screens are registered in `SCREEN_COMPONENTS` in `World.tsx`; unmapped ids fall back to the generic `<Screen>`
+- Screens are one non-scrolling viewport each — no inner scroll regions (they'd fight wheel navigation)
+- Screens remount on every navigation, so entry animations use ~0.3s delays to land as the 0.6s slide settles
 - No SSR (no Next.js) — static portfolio site
 - Mobile/touch support deferred to Phase 9
 
 ## Placeholder Image Pattern
 
-All screens should use reusable `<PlaceholderImage />` components for images until real assets are provided. These should be easily swappable when real photos/assets arrive.
+All screens use the reusable `<PlaceholderImage />` (`src/components/PlaceholderImage/`) for images until real assets are provided. Variants: `photo`, `screenshot` (fake browser chrome), `polaroid` (white matte + handwritten caption). To swap in a real asset, add `src` to the corresponding entry in `src/data/*.ts` — the component renders an `<img>` in the same box.
 
 ## Life & Photos Direction
 
-The Life & Photos screen should have a scrapbook/collage aesthetic — scattered/rotated photos, tape/pin decorations, handwritten-style labels. Not a clean grid; organic and layered like a physical scrapbook or pinboard.
+The Life & Photos screen has a scrapbook/collage aesthetic — scattered/rotated polaroids, tape/pin decorations, handwritten labels (Caveat). Not a clean grid; organic and layered like a physical pinboard. Photo positions live in `src/data/lifePhotos.ts`; keep them out of the NavHint safe zones documented there.

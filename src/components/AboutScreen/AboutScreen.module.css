@@ -1,7 +1,7 @@
 .screen {
   width: 100vw;
   height: 100vh;
-  background-color: #2D6A4F;
+  background-color: var(--color-about);
   display: flex;
   align-items: stretch;
   gap: 30px;
