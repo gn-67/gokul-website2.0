@@ -6,6 +6,7 @@ import HomeScreen from '../HomeScreen/HomeScreen'
 import AboutScreen from '../AboutScreen/AboutScreen'
 import WorkScreen from '../WorkScreen/WorkScreen'
 import StudioScreen from '../StudioScreen/StudioScreen'
+import LifeScreen from '../LifeScreen/LifeScreen'
 import { SCREENS, useNavStore } from '../../store/useNavStore'
 import type { Direction } from '../../store/useNavStore'
 import styles from './World.module.css'
@@ -15,6 +16,7 @@ const SCREEN_COMPONENTS: Record<string, ComponentType> = {
   about: AboutScreen,
   dev: WorkScreen,
   design: StudioScreen,
+  life: LifeScreen,
 }
 
 const DIRECTION_OFFSETS: Record<Direction, { x: string; y: string }> = {

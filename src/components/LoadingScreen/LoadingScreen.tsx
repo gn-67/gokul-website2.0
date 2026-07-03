@@ -10,7 +10,7 @@ interface LoadingScreenProps {
 const MIN_DISPLAY_MS = 800
 const SAFETY_TIMEOUT_MS = 5000
 const PRELOAD_IMAGES = [profileBg, profileFg]
-const PRELOAD_FONTS = ["300 1rem 'Cooper Light BT'"]
+const PRELOAD_FONTS = ["300 1rem 'Cooper Light BT'", '600 1rem Caveat']
 
 function preloadImage(src: string) {
   return new Promise<void>((resolve) => {
