@@ -1,7 +1,7 @@
 .screen {
   width: 100vw;
   height: 100vh;
-  background-color: var(--color-life);
+  background-color: transparent; /* ocean video layer behind */
   position: relative;
   overflow: hidden;
 }

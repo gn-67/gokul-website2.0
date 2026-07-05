@@ -1,7 +1,7 @@
 .screen {
   width: 100vw;
   height: 100vh;
-  background-color: var(--color-about);
+  background-color: transparent; /* ocean video layer behind */
   display: flex;
   align-items: stretch;
   gap: 30px;

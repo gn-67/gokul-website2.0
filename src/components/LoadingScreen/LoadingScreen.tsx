@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react'
 import profileBg from '../../assets/images/profilebg.jpeg'
 import profileFg from '../../assets/images/profileFG.png'
+import oceanHomePoster from '../../assets/ocean/ocean-home.png'
+import oceanUpPoster from '../../assets/ocean/ocean-up.png'
+import oceanDownPoster from '../../assets/ocean/ocean-down.png'
+import oceanLeftPoster from '../../assets/ocean/ocean-left.png'
+import oceanRightPoster from '../../assets/ocean/ocean-right.png'
 import styles from './LoadingScreen.module.css'
 
 interface LoadingScreenProps {
@@ -9,7 +14,17 @@ interface LoadingScreenProps {
 
 const MIN_DISPLAY_MS = 800
 const SAFETY_TIMEOUT_MS = 5000
-const PRELOAD_IMAGES = [profileBg, profileFg]
+const PRELOAD_IMAGES = [
+  profileBg,
+  profileFg,
+  // ocean video posters — shown the instant the site appears, before the
+  // videos themselves finish buffering
+  oceanHomePoster,
+  oceanUpPoster,
+  oceanDownPoster,
+  oceanLeftPoster,
+  oceanRightPoster,
+]
 const PRELOAD_FONTS = ["300 1rem 'Cooper Light BT'", '600 1rem Caveat']
 
 function preloadImage(src: string) {

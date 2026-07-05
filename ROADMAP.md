@@ -53,9 +53,10 @@ Only one screen renders at a time; slides animate in from the direction of trave
 - 800ms minimum display, 5s safety timeout so a stuck asset never hangs the site
 - Fades out to reveal the site; gates the Home split-flap intro
 
-### Phase 3: Beach MP4 Background ⏸ **DEFERRED** (no assets available yet)
-- Fixed video background behind the entire world
-- Performance considerations (autoplay, loop, muted)
+### Phase 3: Ocean Video Background ✅
+- Five seamless looping MP4s (20s, 1080p24, ~15MB total) rendered from `ocean.blend` as ONE 5760×3240 frame per frame and sliced, so adjacent screens share exact pixels at every seam (`src/assets/ocean/`, pipeline in `scripts/ocean-render/`)
+- `OceanBackground` fixed layer: all five videos permanently mounted, playing muted/looped in sync (clock resync at nav time), sliding in lockstep with screen transitions — the site reads as one continuous camera pan
+- Screens are now transparent; a single uniform scrim keeps text legible without painting seam edges; posters preloaded by the LoadingScreen; reduced-motion users get still posters
 
 ### Phase 4: Home Screen Content ✅
 - Split-flap name display, live military-time clock, nav hints
@@ -82,7 +83,6 @@ Only one screen renders at a time; slides animate in from the direction of trave
 
 ### Remaining work
 - Swap `[bracketed]` placeholder copy/images in `src/data/*.ts` for real content
-- Beach MP4 background when assets are ready (Phase 3)
 - Mobile/touch navigation + responsive layouts (Phase 9)
 
 ## Decisions Log
@@ -97,6 +97,8 @@ Only one screen renders at a time; slides animate in from the direction of trave
 | Rename "Dev Works" → "Work", "Design & Other Works" → "Experiences" | Cleaner display names. Code-level ids/labels unchanged (`dev`/`WORK`, `design`/`STUDIO`) | 2026-07-02 |
 | Screens registered via `SCREEN_COMPONENTS` map in World.tsx | Replaces the hardcoded ternary; unmapped ids fall back to the generic `<Screen>` so screens can land incrementally | 2026-07-02 |
 | Marked `[bracketed]` placeholder copy in `src/data/*.ts` | All content is data-driven and obviously fake — swapping in real projects/experiences/photos is a data-file edit, no layout changes | 2026-07-02 |
+| Ocean background: one giant render sliced into five tiles | Separate per-screen renders can never seam perfectly (compositor glare + raytraced reflections are screen-space); slicing one 5760×3240 render makes every seam exact by construction | 2026-07-04 |
+| Background videos in a fixed always-playing layer, screens transparent | Videos must never remount (resets loop clock) or carry per-screen tints (paints seam edges); one shared scrim + lockstep slide animation keeps the one-world illusion | 2026-07-04 |
 | Caveat via `@fontsource/caveat` for handwritten text | Self-hosted npm package, no CDN at runtime; `--font-hand` token carries a system-cursive fallback | 2026-07-02 |
 | Design tokens in `:root` (index.css) | Colors, fonts, text alphas, glow, glass panel shared across modules; @font-face deduplicated to one global rule | 2026-07-02 |
 | Real asset preloading in LoadingScreen | `document.fonts.load` + Image() preloads with 800ms min display and 5s safety race — fixes FOUT on the split-flap intro without risking a hang | 2026-07-02 |

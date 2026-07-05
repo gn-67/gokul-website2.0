@@ -58,14 +58,16 @@ src/
     LifeScreen/        — scrapbook collage (polaroids, tape/pins)
     NavHint/           — navigation direction hints (hover scramble)
     SplitFlap/         — split-flap display component
-    LoadingScreen/     — real asset preloading (fonts + images) + fade
+    LoadingScreen/     — real asset preloading (fonts + images + video posters) + fade
     PlaceholderImage/  — swappable image placeholder (photo/screenshot/polaroid)
+    OceanBackground/   — fixed layer of five synced looping ocean videos
+  assets/ocean/        — five seamless MP4 tiles + poster PNGs (from ocean.blend)
+scripts/ocean-render/  — Blender headless pipeline that produced them (see its README)
 ```
 
 ## Current Status
 
-All five screens are built (see ROADMAP.md). Remaining deferred work:
-- **Phase 3** — beach MP4 background (waiting on assets)
+All five screens are built with the seamless ocean video background wired in (see ROADMAP.md). Remaining deferred work:
 - **Phase 9 mobile** — touch/swipe navigation and responsive layouts (desktop experience is locked in first)
 - **Content** — all copy/images are `[bracketed]` placeholders in `src/data/*.ts`, ready to swap for real content
 
@@ -77,6 +79,7 @@ All five screens are built (see ROADMAP.md). Remaining deferred work:
 - Screens remount on every navigation, so entry animations use ~0.3s delays to land as the 0.6s slide settles
 - No SSR (no Next.js) — static portfolio site
 - Mobile/touch support deferred to Phase 9
+- Ocean background: five video tiles sliced from ONE 5760×3240 Blender render per frame — separate renders can never seam (screen-space glare/reflections). The `OceanBackground` layer keeps all five `<video>`s mounted and playing forever (remount = loop-clock reset = broken seams mid-slide); screens are transparent; readability comes from one uniform scrim, never per-screen tints (those paint a visible edge at the seam). Re-render via `scripts/ocean-render/`.
 
 ## Placeholder Image Pattern
 
