@@ -5,6 +5,16 @@
   background-color: #0d1526; /* deep navy base while videos buffer */
 }
 
+/* One full five-tile video set (ocean or halftone). The halftone set sits on
+   top and is the only layer whose opacity animates during a mode toggle, so
+   the crossfade never dips toward the base color. Duration must match
+   MODE_FADE_MS in OceanBackground.tsx. */
+.set {
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.8s ease;
+}
+
 .tile {
   position: absolute;
   inset: 0;

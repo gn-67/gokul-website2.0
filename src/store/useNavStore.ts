@@ -2,6 +2,10 @@ import { create } from 'zustand'
 
 export type Direction = 'up' | 'down' | 'left' | 'right'
 
+// Two visual treatments of the same ocean world: 'halftone' (B&W dot-matrix,
+// the default) and 'ocean' (full-color dusk render).
+export type BgMode = 'halftone' | 'ocean'
+
 export interface Screen {
   id: string
   label: string
@@ -75,9 +79,11 @@ interface NavState {
   animDirection: Direction | null
   isAnimating: boolean
   loadingComplete: boolean
+  bgMode: BgMode
   navigateTo: (direction: Direction) => void
   setAnimationComplete: () => void
   setLoadingComplete: () => void
+  toggleBgMode: () => void
 }
 
 export const useNavStore = create<NavState>((set, get) => ({
@@ -85,6 +91,7 @@ export const useNavStore = create<NavState>((set, get) => ({
   animDirection: null,
   isAnimating: false,
   loadingComplete: false,
+  bgMode: 'halftone',
 
   navigateTo: (direction: Direction) => {
     const { activeScreenId, isAnimating } = get()
@@ -102,4 +109,6 @@ export const useNavStore = create<NavState>((set, get) => ({
 
   setAnimationComplete: () => set({ isAnimating: false }),
   setLoadingComplete: () => set({ loadingComplete: true }),
+  toggleBgMode: () =>
+    set((s) => ({ bgMode: s.bgMode === 'halftone' ? 'ocean' : 'halftone' })),
 }))

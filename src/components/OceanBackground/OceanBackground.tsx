@@ -1,32 +1,59 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavStore } from '../../store/useNavStore'
-import type { Direction } from '../../store/useNavStore'
-import homeMp4 from '../../assets/ocean/ocean-home.mp4'
-import leftMp4 from '../../assets/ocean/ocean-left.mp4'
-import rightMp4 from '../../assets/ocean/ocean-right.mp4'
-import upMp4 from '../../assets/ocean/ocean-up.mp4'
-import downMp4 from '../../assets/ocean/ocean-down.mp4'
-import homePoster from '../../assets/ocean/ocean-home.png'
-import leftPoster from '../../assets/ocean/ocean-left.png'
-import rightPoster from '../../assets/ocean/ocean-right.png'
-import upPoster from '../../assets/ocean/ocean-up.png'
-import downPoster from '../../assets/ocean/ocean-down.png'
+import type { BgMode, Direction } from '../../store/useNavStore'
+import oceanHomeMp4 from '../../assets/ocean/ocean-home.mp4'
+import oceanLeftMp4 from '../../assets/ocean/ocean-left.mp4'
+import oceanRightMp4 from '../../assets/ocean/ocean-right.mp4'
+import oceanUpMp4 from '../../assets/ocean/ocean-up.mp4'
+import oceanDownMp4 from '../../assets/ocean/ocean-down.mp4'
+import oceanHomePoster from '../../assets/ocean/ocean-home.png'
+import oceanLeftPoster from '../../assets/ocean/ocean-left.png'
+import oceanRightPoster from '../../assets/ocean/ocean-right.png'
+import oceanUpPoster from '../../assets/ocean/ocean-up.png'
+import oceanDownPoster from '../../assets/ocean/ocean-down.png'
+import halftoneHomeMp4 from '../../assets/ocean/halftone-home.mp4'
+import halftoneLeftMp4 from '../../assets/ocean/halftone-left.mp4'
+import halftoneRightMp4 from '../../assets/ocean/halftone-right.mp4'
+import halftoneUpMp4 from '../../assets/ocean/halftone-up.mp4'
+import halftoneDownMp4 from '../../assets/ocean/halftone-down.mp4'
+import halftoneHomePoster from '../../assets/ocean/halftone-home.jpg'
+import halftoneLeftPoster from '../../assets/ocean/halftone-left.jpg'
+import halftoneRightPoster from '../../assets/ocean/halftone-right.jpg'
+import halftoneUpPoster from '../../assets/ocean/halftone-up.jpg'
+import halftoneDownPoster from '../../assets/ocean/halftone-down.jpg'
 import styles from './OceanBackground.module.css'
 
-// All five tiles are crops of one Blender render, so adjacent screens share
-// exact pixels at their seams. The videos stay mounted and playing forever —
-// remounting or pausing would desync their shared clock and break the
-// "one continuous world" illusion during slides.
-const OCEAN_TILES: Record<string, { src: string; poster: string }> = {
-  home: { src: homeMp4, poster: homePoster },
-  design: { src: leftMp4, poster: leftPoster }, // left of home
-  dev: { src: rightMp4, poster: rightPoster }, // right of home
-  about: { src: upMp4, poster: upPoster }, // above home
-  life: { src: downMp4, poster: downPoster }, // below home
+// All five tiles of each set are crops of one Blender render (the halftone
+// set is the same render passed through an AE Card Dance rig with the dot
+// grid spanning exactly one tile), so adjacent screens share exact pixels at
+// their seams. Videos stay mounted forever — remounting resets a video's
+// loop clock and breaks the "one continuous world" illusion during slides.
+type TileSet = Record<string, { src: string; poster: string }>
+
+const TILE_SETS: Record<BgMode, TileSet> = {
+  ocean: {
+    home: { src: oceanHomeMp4, poster: oceanHomePoster },
+    design: { src: oceanLeftMp4, poster: oceanLeftPoster }, // left of home
+    dev: { src: oceanRightMp4, poster: oceanRightPoster }, // right of home
+    about: { src: oceanUpMp4, poster: oceanUpPoster }, // above home
+    life: { src: oceanDownMp4, poster: oceanDownPoster }, // below home
+  },
+  halftone: {
+    home: { src: halftoneHomeMp4, poster: halftoneHomePoster },
+    design: { src: halftoneLeftMp4, poster: halftoneLeftPoster },
+    dev: { src: halftoneRightMp4, poster: halftoneRightPoster },
+    about: { src: halftoneUpMp4, poster: halftoneUpPoster },
+    life: { src: halftoneDownMp4, poster: halftoneDownPoster },
+  },
 }
 
-const SCREEN_IDS = Object.keys(OCEAN_TILES)
+// Ocean renders below, halftone above: the mode crossfade only ever animates
+// the halftone layer's opacity, so the visible frame never dips toward the
+// dark base color mid-fade.
+const SET_ORDER: BgMode[] = ['ocean', 'halftone']
+
+const SCREEN_IDS = Object.keys(TILE_SETS.ocean)
 
 const OFFSETS: Record<Direction, { x: string; y: string }> = {
   up: { x: '0%', y: '-100%' },
@@ -49,10 +76,13 @@ const slideTransition = {
 
 const LOOP_SECONDS = 20
 const SYNC_THRESHOLD_S = 0.08
+// keep in sync with the opacity transition in OceanBackground.module.css
+const MODE_FADE_MS = 800
 
 export default function OceanBackground() {
   const activeScreenId = useNavStore((s) => s.activeScreenId)
   const animDirection = useNavStore((s) => s.animDirection)
+  const bgMode = useNavStore((s) => s.bgMode)
   const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({})
 
   // Track the previous screen during render so the background starts sliding
@@ -66,68 +96,102 @@ export default function OceanBackground() {
   // outgoing tile's clock at nav time, when the correction is invisible.
   useEffect(() => {
     if (!pair.prev) return
-    const inc = videoRefs.current[pair.current]
-    const out = videoRefs.current[pair.prev]
+    const inc = videoRefs.current[`${bgMode}:${pair.current}`]
+    const out = videoRefs.current[`${bgMode}:${pair.prev}`]
     if (!inc || !out || inc.readyState < 2 || out.readyState < 2) return
     const d = Math.abs(inc.currentTime - out.currentTime)
     if (Math.min(d, LOOP_SECONDS - d) > SYNC_THRESHOLD_S) {
       inc.currentTime = out.currentTime
     }
-  }, [pair])
+  }, [pair, bgMode])
+
+  // Mode toggle: seat the incoming set on the outgoing set's clock so the
+  // crossfade lands on the same moment of the same world, then park the
+  // hidden set (paused videos cost no decode).
+  const prevModeRef = useRef(bgMode)
+  useEffect(() => {
+    const from = prevModeRef.current
+    if (from === bgMode) return
+    prevModeRef.current = bgMode
+    const out = videoRefs.current[`${from}:${useNavStore.getState().activeScreenId}`]
+    const t = out?.currentTime ?? 0
+    for (const id of SCREEN_IDS) {
+      const v = videoRefs.current[`${bgMode}:${id}`]
+      if (!v) continue
+      const dur = Number.isFinite(v.duration) && v.duration > 0 ? v.duration : LOOP_SECONDS
+      v.currentTime = t % dur
+      v.play().catch(() => {})
+    }
+    const timer = setTimeout(() => {
+      for (const id of SCREEN_IDS) videoRefs.current[`${from}:${id}`]?.pause()
+    }, MODE_FADE_MS)
+    return () => clearTimeout(timer)
+  }, [bgMode])
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const playAll = () => {
-      for (const v of Object.values(videoRefs.current)) v?.play().catch(() => {})
+    const playActive = () => {
+      const mode = useNavStore.getState().bgMode
+      for (const id of SCREEN_IDS) {
+        videoRefs.current[`${mode}:${id}`]?.play().catch(() => {})
+      }
     }
-    playAll() // muted autoplay is allowed, but retry on first input just in case
-    window.addEventListener('pointerdown', playAll, { once: true })
-    return () => window.removeEventListener('pointerdown', playAll)
+    playActive() // muted autoplay is allowed, but retry on first input just in case
+    window.addEventListener('pointerdown', playActive, { once: true })
+    return () => window.removeEventListener('pointerdown', playActive)
   }, [])
 
   return (
     <div className={styles.layer} aria-hidden="true">
-      {SCREEN_IDS.map((id) => {
-        const isActive = id === pair.current
-        const isLeaving = id === pair.prev && animDirection !== null
-        const dir = animDirection
-        let animate
-        if (isActive) {
-          animate =
-            dir && pair.prev
-              ? { x: [OFFSETS[dir].x, '0%'], y: [OFFSETS[dir].y, '0%'] }
-              : { x: '0%', y: '0%' }
-        } else if (isLeaving && dir) {
-          const exit = OFFSETS[OPPOSITE[dir]]
-          animate = { x: ['0%', exit.x], y: ['0%', exit.y] }
-        } else {
-          // parked offscreen; keeps playing so the shared clock never resets
-          animate = { x: '0%', y: '120%' }
-        }
-        return (
-          <motion.div
-            key={id}
-            className={styles.tile}
-            initial={false}
-            animate={animate}
-            transition={isActive || isLeaving ? slideTransition : { duration: 0 }}
-          >
-            <video
-              ref={(el) => {
-                videoRefs.current[id] = el
-              }}
-              className={styles.video}
-              src={OCEAN_TILES[id].src}
-              poster={OCEAN_TILES[id].poster}
-              muted
-              loop
-              playsInline
-              autoPlay
-              preload="auto"
-            />
-          </motion.div>
-        )
-      })}
+      {SET_ORDER.map((mode) => (
+        <div
+          key={mode}
+          className={styles.set}
+          style={mode === 'halftone' ? { opacity: bgMode === 'halftone' ? 1 : 0 } : undefined}
+        >
+          {SCREEN_IDS.map((id) => {
+            const isActive = id === pair.current
+            const isLeaving = id === pair.prev && animDirection !== null
+            const dir = animDirection
+            let animate
+            if (isActive) {
+              animate =
+                dir && pair.prev
+                  ? { x: [OFFSETS[dir].x, '0%'], y: [OFFSETS[dir].y, '0%'] }
+                  : { x: '0%', y: '0%' }
+            } else if (isLeaving && dir) {
+              const exit = OFFSETS[OPPOSITE[dir]]
+              animate = { x: ['0%', exit.x], y: ['0%', exit.y] }
+            } else {
+              // parked offscreen; keeps playing so the shared clock never resets
+              animate = { x: '0%', y: '120%' }
+            }
+            return (
+              <motion.div
+                key={id}
+                className={styles.tile}
+                initial={false}
+                animate={animate}
+                transition={isActive || isLeaving ? slideTransition : { duration: 0 }}
+              >
+                <video
+                  ref={(el) => {
+                    videoRefs.current[`${mode}:${id}`] = el
+                  }}
+                  className={styles.video}
+                  src={TILE_SETS[mode][id].src}
+                  poster={TILE_SETS[mode][id].poster}
+                  muted
+                  loop
+                  playsInline
+                  autoPlay={mode === bgMode}
+                  preload="auto"
+                />
+              </motion.div>
+            )
+          })}
+        </div>
+      ))}
       <div className={styles.scrim} />
     </div>
   )
