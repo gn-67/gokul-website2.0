@@ -1,0 +1,40 @@
+.layer {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background-color: #0d1526; /* deep navy base while videos buffer */
+}
+
+/* One full five-tile video set (ocean or halftone). The halftone set sits on
+   top and is the only layer whose opacity animates during a mode toggle, so
+   the crossfade never dips toward the base color. Duration must match
+   MODE_FADE_MS in OceanBackground.tsx. */
+.set {
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.8s ease;
+}
+
+.tile {
+  position: absolute;
+  inset: 0;
+}
+
+.video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Note: on non-16:9 viewports, cover-cropping trims each tile's edges
+     equally, so a sliver of world is missing at seams during slides.
+     Exact on 16:9 displays; imperceptible on water elsewhere. */
+}
+
+/* One uniform veil over the whole layer (never per-tile — a per-screen tint
+   would paint a visible edge at the seam mid-slide). Keeps text legible. */
+.scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: rgba(10, 14, 34, 0.3);
+}

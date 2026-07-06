@@ -1,73 +1,74 @@
-# React + TypeScript + Vite
+# gokul-website2.0
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A 2D free-roam personal portfolio. You land on a central **Home** screen and
+navigate in cardinal directions through an infinite, wrapping world of five
+screens:
 
-Currently, two official plugins are available:
+```
+            About Me (up)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Experiences    HOME       Work
+  (left)                 (right)
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+          Life & Photos (down)
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Controls
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- **Scroll** (mouse wheel / trackpad) in any direction
+- **WASD** or **arrow keys**
+- **Click** the edge navigation hints
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Navigation wraps — keep going in one direction and you loop around.
+
+## Stack
+
+- React 19 + TypeScript, built with Vite
+- Zustand for navigation state (`src/store/useNavStore.ts`)
+- Framer Motion for slide transitions and screen animations
+- CSS Modules, with shared design tokens in `src/index.css`
+- Self-hosted fonts: Cooper Light BT (serif) and Caveat (handwritten, via
+  `@fontsource/caveat`)
+
+## Commands
+
+| Command           | Does                                        |
+|-------------------|---------------------------------------------|
+| `npm run dev`     | start the dev server                        |
+| `npm run build`   | typecheck + production build                |
+| `npm run lint`    | run ESLint                                  |
+| `npm run preview` | preview the production build                |
+
+## Swapping in real content
+
+All placeholder content is data-driven and marked with `[brackets]`:
+
+- **Projects** — edit `src/data/projects.ts`
+- **Experiences / creative shelf** — edit `src/data/experiences.ts`
+- **Life photos + captions** — edit `src/data/lifePhotos.ts`
+
+To replace a placeholder frame with a real image, import the asset in the
+data file and add it as `src` on the entry — the `<PlaceholderImage />`
+component (`src/components/PlaceholderImage/`) swaps to a real `<img>`
+automatically, keeping the same layout.
+
+## Structure
+
+```
+src/
+  store/useNavStore.ts        navigation map + active screen state
+  hooks/useScrambleText.ts    scramble-reveal text animation
+  data/                       editable placeholder content
+  components/
+    World/                    slide-transition navigation engine
+    Screen/                   generic fallback screen
+    HomeScreen/               split-flap name + live clock
+    AboutScreen/              parallax profile card + bio
+    WorkScreen/               project showcase (master-detail)
+    StudioScreen/             experience timeline + creative shelf
+    LifeScreen/               scrapbook photo collage
+    NavHint/                  edge navigation hints
+    SplitFlap/                split-flap display component
+    LoadingScreen/            asset preloading + fade-in
+    PlaceholderImage/         swappable image placeholder
 ```

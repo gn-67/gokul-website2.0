@@ -1,3 +1,50 @@
+@font-face {
+  font-family: 'Cooper Light BT';
+  src: url('./assets/fonts/CooperLightBT.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Screen colors */
+  --color-home: #1A1A2E;
+  --color-about: #2D6A4F;
+  --color-life: #1B4965;
+  --color-work: #B44215;
+  --color-studio: #7B2D8B;
+
+  /* Type */
+  --font-serif: 'Cooper Light BT', Georgia, serif;
+  --font-hand: 'Caveat', 'Segoe Script', 'Comic Sans MS', cursive;
+
+  /* Text alphas */
+  --text-bright: rgba(255, 255, 255, 0.95);
+  --text-mid: rgba(255, 255, 255, 0.7);
+  --text-dim: rgba(255, 255, 255, 0.5);
+  --text-faint: rgba(255, 255, 255, 0.25);
+
+  /* Signature glow */
+  --glow-text:
+    0 0 12px rgba(255, 255, 255, 0.15),
+    0 0 4px rgba(200, 220, 255, 0.1);
+
+  /* Glass panel */
+  --glass-bg: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  --glass-border: 1px solid rgba(255, 255, 255, 0.15);
+  --glass-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+
+  /* Motion */
+  --ease-slide: cubic-bezier(0.33, 1, 0.68, 1);
+}
+
 *,
 *::before,
 *::after {

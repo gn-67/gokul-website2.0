@@ -1,11 +1,23 @@
 import { useEffect, useCallback, useRef } from 'react'
+import type { ComponentType } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Screen from '../Screen/Screen'
 import HomeScreen from '../HomeScreen/HomeScreen'
 import AboutScreen from '../AboutScreen/AboutScreen'
+import WorkScreen from '../WorkScreen/WorkScreen'
+import StudioScreen from '../StudioScreen/StudioScreen'
+import LifeScreen from '../LifeScreen/LifeScreen'
 import { SCREENS, useNavStore } from '../../store/useNavStore'
 import type { Direction } from '../../store/useNavStore'
 import styles from './World.module.css'
+
+const SCREEN_COMPONENTS: Record<string, ComponentType> = {
+  home: HomeScreen,
+  about: AboutScreen,
+  dev: WorkScreen,
+  design: StudioScreen,
+  life: LifeScreen,
+}
 
 const DIRECTION_OFFSETS: Record<Direction, { x: string; y: string }> = {
   up:    { x: '0%',    y: '-100%' },
@@ -38,7 +50,7 @@ const slideVariants = {
 
 const slideTransition = {
   duration: 0.6,
-  ease: [0.33, 1, 0.68, 1],
+  ease: [0.33, 1, 0.68, 1] as const,
 }
 
 export default function World() {
@@ -97,6 +109,7 @@ export default function World() {
   }, [handleWheel])
 
   const screen = SCREENS.find((s) => s.id === activeScreenId)!
+  const ActiveScreen = SCREEN_COMPONENTS[activeScreenId]
 
   return (
     <div ref={containerRef} className={styles.container}>
@@ -112,10 +125,8 @@ export default function World() {
           transition={slideTransition}
           onAnimationComplete={() => setAnimationComplete()}
         >
-          {activeScreenId === 'home'
-            ? <HomeScreen />
-            : activeScreenId === 'about'
-            ? <AboutScreen />
+          {ActiveScreen
+            ? <ActiveScreen />
             : <Screen id={screen.id} label={screen.label} color={screen.color} />
           }
         </motion.div>
