@@ -57,7 +57,7 @@ Only one screen renders at a time; slides animate in from the direction of trave
 - Five seamless looping MP4s (20s, 1080p24, ~15MB total) rendered from `ocean.blend` as ONE 5760×3240 frame per frame and sliced, so adjacent screens share exact pixels at every seam (`src/assets/ocean/`, pipeline in `scripts/ocean-render/`)
 - `OceanBackground` fixed layer: all five videos permanently mounted, playing muted/looped in sync (clock resync at nav time), sliding in lockstep with screen transitions — the site reads as one continuous camera pan
 - Screens are now transparent; a single uniform scrim keeps text legible without painting seam edges; posters preloaded by the LoadingScreen; reduced-motion users get still posters
-- Second background set: B&W halftone treatment of the same five tiles (AE Card Dance rig, dot grid spans exactly one tile so seams stay flush), default on load; corner `ModeToggle` crossfades between sets with both videos synced to the same timestamp
+- Second background set: B&W halftone treatment of the same five tiles (AE Card Dance rig, dot grid spans exactly one tile so seams stay flush), default on load; corner `ModeDial` amp-style knob mixes the sets continuously (rotate/scroll/arrow keys, click to flip), both videos synced to the same timestamp while mid-blend
 
 ### Phase 4: Home Screen Content ✅
 - Split-flap name display, live military-time clock, nav hints
@@ -101,6 +101,7 @@ Only one screen renders at a time; slides animate in from the direction of trave
 | Ocean background: one giant render sliced into five tiles | Separate per-screen renders can never seam perfectly (compositor glare + raytraced reflections are screen-space); slicing one 5760×3240 render makes every seam exact by construction | 2026-07-04 |
 | Background videos in a fixed always-playing layer, screens transparent | Videos must never remount (resets loop clock) or carry per-screen tints (paints seam edges); one shared scrim + lockstep slide animation keeps the one-world illusion | 2026-07-04 |
 | Halftone background set (default) + ModeToggle crossfade | Same five tiles through an AE Card Dance halftone rig (dot grid spans one tile — seams verified flush); halftone layer stacks above ocean and only its opacity animates, incoming set seeked to outgoing's clock, hidden set paused after fade | 2026-07-05 |
+| ModeToggle → ModeDial: continuous amp-knob blend | Binary `bgMode` replaced by `bgBlend` (0–1); the knob's rotation IS the crossfade, so mid positions are valid resting states with both sets playing in sync; end detents park the hidden set, plain click still flips like the old toggle | 2026-07-09 |
 | Caveat via `@fontsource/caveat` for handwritten text | Self-hosted npm package, no CDN at runtime; `--font-hand` token carries a system-cursive fallback | 2026-07-02 |
 | Design tokens in `:root` (index.css) | Colors, fonts, text alphas, glow, glass panel shared across modules; @font-face deduplicated to one global rule | 2026-07-02 |
 | Real asset preloading in LoadingScreen | `document.fonts.load` + Image() preloads with 800ms min display and 5s safety race — fixes FOUT on the split-flap intro without risking a hang | 2026-07-02 |
