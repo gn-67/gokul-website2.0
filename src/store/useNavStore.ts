@@ -79,11 +79,14 @@ interface NavState {
   animDirection: Direction | null
   isAnimating: boolean
   loadingComplete: boolean
-  bgMode: BgMode
+  // Continuous mix between the two background sets: 0 = full-color ocean,
+  // 1 = halftone. Driven live by the ModeDial knob, so mid values are valid
+  // resting states, not just transition frames.
+  bgBlend: number
   navigateTo: (direction: Direction) => void
   setAnimationComplete: () => void
   setLoadingComplete: () => void
-  toggleBgMode: () => void
+  setBgBlend: (value: number) => void
 }
 
 export const useNavStore = create<NavState>((set, get) => ({
@@ -91,7 +94,7 @@ export const useNavStore = create<NavState>((set, get) => ({
   animDirection: null,
   isAnimating: false,
   loadingComplete: false,
-  bgMode: 'halftone',
+  bgBlend: 1,
 
   navigateTo: (direction: Direction) => {
     const { activeScreenId, isAnimating } = get()
@@ -109,6 +112,6 @@ export const useNavStore = create<NavState>((set, get) => ({
 
   setAnimationComplete: () => set({ isAnimating: false }),
   setLoadingComplete: () => set({ loadingComplete: true }),
-  toggleBgMode: () =>
-    set((s) => ({ bgMode: s.bgMode === 'halftone' ? 'ocean' : 'halftone' })),
+  setBgBlend: (value: number) =>
+    set({ bgBlend: Math.min(1, Math.max(0, value)) }),
 }))

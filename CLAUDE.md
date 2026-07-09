@@ -61,7 +61,7 @@ src/
     LoadingScreen/     — real asset preloading (fonts + images + video posters) + fade
     PlaceholderImage/  — swappable image placeholder (photo/screenshot/polaroid)
     OceanBackground/   — fixed layer of synced looping bg videos (two sets: halftone + ocean)
-    ModeToggle/        — corner button toggling halftone/ocean background sets
+    ModeDial/          — amp-style corner knob mixing halftone/ocean background sets
   assets/ocean/        — two seamless five-tile video sets + posters: ocean-* (color,
                          from ocean.blend) and halftone-* (B&W, AE Card Dance rig in
                          C:\Users\gokul\Documents\halftone.aep)
@@ -83,7 +83,7 @@ All five screens are built with the seamless ocean video background wired in (se
 - No SSR (no Next.js) — static portfolio site
 - Mobile/touch support deferred to Phase 9
 - Ocean background: five video tiles sliced from ONE 5760×3240 Blender render per frame — separate renders can never seam (screen-space glare/reflections). The `OceanBackground` layer keeps all `<video>`s mounted forever (remount = loop-clock reset = broken seams mid-slide); screens are transparent; readability comes from one uniform scrim, never per-screen tints (those paint a visible edge at the seam). Re-render via `scripts/ocean-render/`.
-- Two background sets, `halftone` (default) and `ocean`, toggled via `bgMode` in the store. The halftone set is the same footage through an AE Card Dance rig whose dot grid spans exactly one tile, so seams still meet flush. The halftone layer stacks ABOVE the ocean layer and is the only one whose opacity animates on toggle (no dark dip mid-fade); the incoming set is seeked to the outgoing set's currentTime so the crossfade lands on the same moment; the hidden set pauses after the fade to save decode.
+- Two background sets, `halftone` (default) and `ocean`, mixed via the continuous `bgBlend` (0–1) in the store, driven live by the `ModeDial` amp-style knob — mid values are valid resting states, not just transition frames. The halftone set is the same footage through an AE Card Dance rig whose dot grid spans exactly one tile, so seams still meet flush. The halftone layer stacks ABOVE the ocean layer and is the only one whose opacity changes with the blend (no dark dip mid-mix, and no CSS transition — easing would lag the knob); a set dragged back into view is seeked to the visible set's currentTime so the mix shows one moment of the same world; a set resting at zero contribution pauses to save decode.
 
 ## Placeholder Image Pattern
 

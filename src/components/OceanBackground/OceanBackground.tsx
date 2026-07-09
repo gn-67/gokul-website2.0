@@ -76,13 +76,17 @@ const slideTransition = {
 
 const LOOP_SECONDS = 20
 const SYNC_THRESHOLD_S = 0.08
-// keep in sync with the opacity transition in OceanBackground.module.css
-const MODE_FADE_MS = 800
+
+// A set contributes pixels when its opacity is nonzero: halftone (on top) at
+// blend > 0, ocean (underneath) at blend < 1.
+function isSetVisible(mode: BgMode, blend: number) {
+  return mode === 'halftone' ? blend > 0 : blend < 1
+}
 
 export default function OceanBackground() {
   const activeScreenId = useNavStore((s) => s.activeScreenId)
   const animDirection = useNavStore((s) => s.animDirection)
-  const bgMode = useNavStore((s) => s.bgMode)
+  const bgBlend = useNavStore((s) => s.bgBlend)
   const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({})
 
   // Track the previous screen during render so the background starts sliding
@@ -94,54 +98,69 @@ export default function OceanBackground() {
 
   // Videos drift a few ms per loop restart; nudge the incoming tile onto the
   // outgoing tile's clock at nav time, when the correction is invisible.
+  // Every visible set gets synced — mid-blend both contribute pixels.
   useEffect(() => {
     if (!pair.prev) return
-    const inc = videoRefs.current[`${bgMode}:${pair.current}`]
-    const out = videoRefs.current[`${bgMode}:${pair.prev}`]
-    if (!inc || !out || inc.readyState < 2 || out.readyState < 2) return
-    // loop lengths differ per set (ocean 20s, halftone 25s), so wrap-check
-    // against the real duration, not the LOOP_SECONDS fallback
-    const dur = Number.isFinite(out.duration) && out.duration > 0 ? out.duration : LOOP_SECONDS
-    const d = Math.abs(inc.currentTime - out.currentTime)
-    if (Math.min(d, dur - d) > SYNC_THRESHOLD_S) {
-      inc.currentTime = out.currentTime
+    const blend = useNavStore.getState().bgBlend
+    for (const mode of SET_ORDER) {
+      if (!isSetVisible(mode, blend)) continue
+      const inc = videoRefs.current[`${mode}:${pair.current}`]
+      const out = videoRefs.current[`${mode}:${pair.prev}`]
+      if (!inc || !out || inc.readyState < 2 || out.readyState < 2) continue
+      // loop lengths differ per set (ocean 20s, halftone 25s), so wrap-check
+      // against the real duration, not the LOOP_SECONDS fallback
+      const dur = Number.isFinite(out.duration) && out.duration > 0 ? out.duration : LOOP_SECONDS
+      const d = Math.abs(inc.currentTime - out.currentTime)
+      if (Math.min(d, dur - d) > SYNC_THRESHOLD_S) {
+        inc.currentTime = out.currentTime
+      }
     }
-  }, [pair, bgMode])
+  }, [pair])
 
-  // Mode toggle: seat the incoming set on the outgoing set's clock so the
-  // crossfade lands on the same moment of the same world, then park the
-  // hidden set (paused videos cost no decode).
-  const prevModeRef = useRef(bgMode)
+  // The dial dragging a parked set back into view: seat it on the visible
+  // set's clock so the mix shows one moment of the same world, and park it
+  // again the instant the dial rests at an extreme (paused videos cost no
+  // decode). Runs on every blend tick but only acts on visibility edges.
+  const visRef = useRef({
+    ocean: isSetVisible('ocean', bgBlend),
+    halftone: isSetVisible('halftone', bgBlend),
+  })
   useEffect(() => {
-    const from = prevModeRef.current
-    if (from === bgMode) return
-    prevModeRef.current = bgMode
-    const out = videoRefs.current[`${from}:${useNavStore.getState().activeScreenId}`]
-    const t = out?.currentTime ?? 0
-    for (const id of SCREEN_IDS) {
-      const v = videoRefs.current[`${bgMode}:${id}`]
-      if (!v) continue
-      const dur = Number.isFinite(v.duration) && v.duration > 0 ? v.duration : LOOP_SECONDS
-      v.currentTime = t % dur
-      v.play().catch(() => {})
+    for (const mode of SET_ORDER) {
+      const visible = isSetVisible(mode, bgBlend)
+      if (visible === visRef.current[mode]) continue
+      visRef.current[mode] = visible
+      if (!visible) {
+        for (const id of SCREEN_IDS) videoRefs.current[`${mode}:${id}`]?.pause()
+        continue
+      }
+      const other: BgMode = mode === 'halftone' ? 'ocean' : 'halftone'
+      const out = videoRefs.current[`${other}:${useNavStore.getState().activeScreenId}`]
+      const t = out?.currentTime ?? 0
+      for (const id of SCREEN_IDS) {
+        const v = videoRefs.current[`${mode}:${id}`]
+        if (!v) continue
+        const dur = Number.isFinite(v.duration) && v.duration > 0 ? v.duration : LOOP_SECONDS
+        v.currentTime = t % dur
+        v.play().catch(() => {})
+      }
     }
-    const timer = setTimeout(() => {
-      for (const id of SCREEN_IDS) videoRefs.current[`${from}:${id}`]?.pause()
-    }, MODE_FADE_MS)
-    return () => clearTimeout(timer)
-  }, [bgMode])
+  }, [bgBlend])
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const playActive = () => {
-      const mode = useNavStore.getState().bgMode
-      for (const id of SCREEN_IDS) {
-        videoRefs.current[`${mode}:${id}`]?.play().catch(() => {})
+    const playVisible = () => {
+      const blend = useNavStore.getState().bgBlend
+      for (const mode of SET_ORDER) {
+        if (!isSetVisible(mode, blend)) continue
+        for (const id of SCREEN_IDS) {
+          videoRefs.current[`${mode}:${id}`]?.play().catch(() => {})
+        }
       }
     }
-    playActive() // muted autoplay is allowed, but retry on first input just in case
-    window.addEventListener('pointerdown', playActive, { once: true })
-    return () => window.removeEventListener('pointerdown', playActive)
+    playVisible() // muted autoplay is allowed, but retry on first input just in case
+    window.addEventListener('pointerdown', playVisible, { once: true })
+    return () => window.removeEventListener('pointerdown', playVisible)
   }, [])
 
   return (
@@ -150,7 +169,7 @@ export default function OceanBackground() {
         <div
           key={mode}
           className={styles.set}
-          style={mode === 'halftone' ? { opacity: bgMode === 'halftone' ? 1 : 0 } : undefined}
+          style={mode === 'halftone' ? { opacity: bgBlend } : undefined}
         >
           {SCREEN_IDS.map((id) => {
             const isActive = id === pair.current
@@ -187,7 +206,7 @@ export default function OceanBackground() {
                   muted
                   loop
                   playsInline
-                  autoPlay={mode === bgMode}
+                  autoPlay={isSetVisible(mode, bgBlend)}
                   preload="auto"
                 />
               </motion.div>
