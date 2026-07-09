@@ -39,6 +39,10 @@ def encoder(path):
         [FFMPEG, "-y", "-f", "rawvideo", "-pix_fmt", "rgb24",
          "-s", f"{TW}x{H}", "-r", str(FPS), "-i", "-",
          "-c:v", "libx264", "-preset", "medium", "-crf", "21",
+         # 1s GOPs: OceanBackground resyncs tile clocks via currentTime at
+         # nav time, and long default GOPs (~250 frames) make that seek a
+         # visible freeze mid-slide.
+         "-g", str(FPS), "-sc_threshold", "0",
          "-pix_fmt", "yuv420p", "-movflags", "+faststart", path],
         stdin=subprocess.PIPE, stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL)

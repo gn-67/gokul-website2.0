@@ -99,8 +99,11 @@ export default function OceanBackground() {
     const inc = videoRefs.current[`${bgMode}:${pair.current}`]
     const out = videoRefs.current[`${bgMode}:${pair.prev}`]
     if (!inc || !out || inc.readyState < 2 || out.readyState < 2) return
+    // loop lengths differ per set (ocean 20s, halftone 25s), so wrap-check
+    // against the real duration, not the LOOP_SECONDS fallback
+    const dur = Number.isFinite(out.duration) && out.duration > 0 ? out.duration : LOOP_SECONDS
     const d = Math.abs(inc.currentTime - out.currentTime)
-    if (Math.min(d, LOOP_SECONDS - d) > SYNC_THRESHOLD_S) {
+    if (Math.min(d, dur - d) > SYNC_THRESHOLD_S) {
       inc.currentTime = out.currentTime
     }
   }, [pair, bgMode])
